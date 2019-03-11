@@ -23,15 +23,15 @@
 #define aoRed 9
 #define aoGreen 10
 #define aoBlue 11
-#define aiPodMeter A0
-#define doLedTest 6
-#define diIrReceiver 8 // Pin 1 on the receiver
+//#define aiPodMeter A0
+#define diIrReceiver 2 // Pin 1 on the receiver
 // pin 2 on the receiver is GND
 // pin 3 on the receiver is Vcc
 
 // led values
 int selectedLed = 0;
-int ledValue = 0;
+
+int ledValues[] = {0, 0, 0};
 
 //IR
 IRrecv irrecv(diIrReceiver);           // create instance of 'irrecv'
@@ -40,14 +40,14 @@ decode_results results;            // create instance of 'decode_results'
 #define SERIAL_RATE 115200
 
 // Globals
-bool enableDebug = true;
+#define ENABLE_DEBUG true
 bool rgbMode = false;
 #define DEMO_DELAY 10
 
 void printLn(String a_inputString) {
-    if (enableDebug) {
-        Serial.println(a_inputString);
-    }
+#if ENABLE_DEBUG
+    Serial.println(a_inputString);
+#endif
 }
 
 void initSerial() {
@@ -58,6 +58,7 @@ void initSerial() {
 void initPins() {
     printLn("INIT: IR");
 
+    pinMode(diIrReceiver, INPUT);
     irrecv.enableIRIn();
 
     printLn("READY: IR");
@@ -85,26 +86,45 @@ int getLedFromNumber(int a_colorNumber) {
 
 }
 
+void writeLedColors() {
+    for (int i = 0; i < sizeof(ledValues); i++) {
+        int led = getLedFromNumber(i);
+        int value = ledValues[i];
+
+        if (value >= 255) {
+            value = 255;
+            ledValues[i] = 255;
+        }
+
+        if (value < 0) {
+            value = 0;
+            ledValues[i] = 0;
+        }
+
+        analogWrite(led, value);
+    }
+}
+
 void setLedColor(int led, int value) {
-    int foundLed = getLedFromNumber(led);
+    ledValues[led] = value;
 
-    int newValue = map(value, 0, 255, 0, 1023);
+    if (value >= 255) {
+        value = 255;
+        ledValues[led] = 255;
+    }
 
-    analogWrite(foundLed, value);
+    if (value < 0) {
+        value = 0;
+        ledValues[led] = 0;
+    }
+
+    int ledPin = getLedFromNumber(led);
+
+    analogWrite(ledPin, value);
 }
 
 int getLedColor(int led) {
-    int value = analogRead(getLedFromNumber(led));
-    int mapped = map(value, 0, 1023, 0, 255);
-
-    printLn((String) value);
-    printLn((String) mapped);
-
-    if (value > 255) {
-        return 255;
-    }
-
-    return value;
+    return ledValues[led];
 }
 
 void initDemo() {
@@ -159,29 +179,31 @@ void handleCmy() {
     switch (m_colorCmyNr) {
 
         case 0:
-            setLedColor(0, 0);
-            setLedColor(1, 255);
-            setLedColor(2, 255);
+            ledValues[0] = 0;
+            ledValues[1] = 255;
+            ledValues[2] = 255;
 
             printLn("Cyan");
             break;
 
         case 1:
-            setLedColor(0, 255);
-            setLedColor(1, 0);
-            setLedColor(2, 255);
+            ledValues[0] = 255;
+            ledValues[1] = 0;
+            ledValues[2] = 255;
 
             printLn("Magenta");
             break;
 
         default:
-            setLedColor(0, 255);
-            setLedColor(1, 255);
-            setLedColor(2, 0);
+            ledValues[0] = 255;
+            ledValues[1] = 255;
+            ledValues[2] = 0;
 
             printLn("Yellow");
             break;
     }
+
+    writeLedColors();
 
     m_colorCmyNr++;
 
@@ -209,9 +231,13 @@ void incrementLedValue() {
         return;
     }
 
-    ledValue = getLedColor(selectedLed);
+    int ledValue = getLedColor(selectedLed);
 
     ledValue = ledValue + 10;
+
+    if (ledValue >= 255) {
+        ledValue = 255;
+    }
 
     printLn((String) "Incrementing " + selectedLed + " new value " + ledValue);
 
@@ -223,9 +249,13 @@ void decrementLedValue() {
         return;
     }
 
-    ledValue = getLedColor(selectedLed);
+    int ledValue = getLedColor(selectedLed);
 
     ledValue = ledValue - 10;
+
+    if (ledValue < 0) {
+        ledValue = 0;
+    }
 
     printLn((String) "Decrementing " + selectedLed + " new value " + ledValue);
 
