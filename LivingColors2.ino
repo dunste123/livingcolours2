@@ -1,6 +1,8 @@
 /**
  * A template for using serial stuff with arduino
  *
+ * Remote library: https://github.com/z3t0/Arduino-IRremote
+ *
  * @date 2019-02-11
  * @author duncte123
  * @version 1
