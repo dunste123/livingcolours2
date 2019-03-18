@@ -168,7 +168,7 @@ void setup() {
     initSerial();
     initPins();
     showCreator();
-//    initDemo();
+    initDemo();
 
 }
 
