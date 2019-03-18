@@ -95,30 +95,29 @@ void writeLedColors() {
 
         if (value >= 255) {
             value = 255;
-            ledValues[i] = 255;
         }
 
         if (value < 0) {
             value = 0;
-            ledValues[i] = 0;
         }
+
+        ledValues[i] = value;
 
         analogWrite(led, value);
     }
 }
 
 void setLedColor(int led, int value) {
-    ledValues[led] = value;
 
     if (value >= 255) {
         value = 255;
-        ledValues[led] = 255;
     }
 
     if (value < 0) {
         value = 0;
-        ledValues[led] = 0;
     }
+
+    ledValues[led] = value;
 
     int ledPin = getLedFromNumber(led);
 
