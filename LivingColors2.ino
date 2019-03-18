@@ -24,7 +24,7 @@
 #define diMinButton 0xFFA25D
 #define aoRed 9
 #define aoGreen 10
-#define aoBlue 11
+#define aoBlue 5
 //#define aiPodMeter A0
 #define diIrReceiver 2 // Pin 1 on the receiver
 // pin 2 on the receiver is GND
@@ -74,12 +74,15 @@ int getLedFromNumber(int a_colorNumber) {
 
     switch (a_colorNumber) {
         case 0:
+        case aoRed:
             return aoRed;
 
         case 1:
+        case aoGreen:
             return aoGreen;
 
         case 2:
+        case aoBlue:
             return aoBlue;
 
         default:
@@ -89,7 +92,9 @@ int getLedFromNumber(int a_colorNumber) {
 }
 
 void writeLedColors() {
-    for (int i = 0; i < sizeof(ledValues); i++) {
+    for (int i = 0; i < 3; i++) {
+        printLn("Writing led: " + (String) i);
+
         int led = getLedFromNumber(i);
         int value = ledValues[i];
 
@@ -104,6 +109,8 @@ void writeLedColors() {
         ledValues[i] = value;
 
         analogWrite(led, value);
+
+        delay(10);
     }
 }
 
@@ -157,6 +164,7 @@ void initDemo() {
         }
 
         colourNumber++;
+        colourValue = 0;
     }
 
     printLn("READY: Demo");
